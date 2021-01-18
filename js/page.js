@@ -1,6 +1,6 @@
 var btn, t1, t2, t3, enable, btnText;
 var SIGN_START_HOUR = 8;
-var SIGN_START_MINUTE = 20;
+var SIGN_START_MINUTE = 30;
 var SIGN_END_HOUR = 18;
 var SIGN_END_MINUTE = 30;
 var addRandom = true;
