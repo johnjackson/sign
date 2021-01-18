@@ -154,13 +154,13 @@ function doClick(waittime) {
       clearTimeout(t3);
       t3 = null;
       killAlert();
-      // btn.click();
+      btn.click();
 
       reloadAfter(1000);
     }, delay_time);
   } else {
     killAlert();
-    // btn.click();
+    btn.click();
 
     reloadAfter(1000);
   }
