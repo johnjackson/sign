@@ -1,0 +1,30 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  width: 235px;
+  padding: 10px;
+}
+.form-item-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 26px;
+}
+.btn {
+  outline: none;
+  width: 75px;
+  height: 48px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+}
+.off {
+  background-image: url(/images/off.png);
+}
+
+.on {
+  background-image: url(/images/on.png);
+}
