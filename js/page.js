@@ -3,8 +3,10 @@ var SIGN_START_HOUR = 8;
 var SIGN_START_MINUTE = 30;
 var SIGN_END_HOUR = 18;
 var SIGN_END_MINUTE = 30;
-var addRandom = true;
-// var options = {};
+
+var sign_time_start;
+var sign_time_end;
+// var addRandom = true;
 
 window.onload = function (params) {
   btn = document.querySelector(".oa_btn_submit span");
@@ -12,7 +14,7 @@ window.onload = function (params) {
 };
 
 chrome.runtime.onMessage.addListener(function (options, sender, sendResponse) {
-  console.log('接收到插件发来的参数', options);
+  // console.log('接收到插件发来的参数', options);
   setOption(options);
   start(options.isEnable);
 });
@@ -27,33 +29,38 @@ function getIsEnable() {
 }
 
 function start(isEnable) {
-  enable = typeof isEnable == 'undefined' ? enable : isEnable;
+  enable = typeof isEnable == "undefined" ? enable : isEnable;
   if (enable) {
-    console.log('%c 自动签到启动', 'color:green');
+    console.log("%c 自动签到启动", "color:green");
     enableSign();
   } else {
-    console.log('%c 自动签到停止', 'color:red');
+    console.log("%c 自动签到停止", "color:red");
     disableSign();
   }
 }
 
 function setOption(options) {
-  if(options && options.sign_start_time) {
-    let st = options.sign_start_time.split(':');
+  if (options && options.sign_start_time) {
+    let st = options.sign_start_time.split(":");
     SIGN_START_HOUR = parseInt(st[0]);
     SIGN_START_MINUTE = parseInt(st[1]);
   }
-  if(options && options.sign_end_time) {
-    let end = options.sign_end_time.split(':');
+  if (options && options.sign_end_time) {
+    let end = options.sign_end_time.split(":");
     SIGN_END_HOUR = parseInt(end[0]);
     SIGN_END_MINUTE = parseInt(end[1]);
   }
-  console.log(SIGN_START_HOUR);
-  console.log(SIGN_START_MINUTE);
-  console.log(SIGN_END_HOUR);
-  console.log(SIGN_END_MINUTE);
-}
 
+  sign_time_start = new Date();
+  sign_time_start.setHours(SIGN_START_HOUR);
+  sign_time_start.setMinutes(SIGN_START_MINUTE);
+  sign_time_end = new Date();
+  sign_time_end.setHours(SIGN_END_HOUR);
+  sign_time_end.setMinutes(SIGN_END_MINUTE);
+
+  console.log("上班时间", sign_time_start.toLocaleTimeString());
+  console.log("下班时间", sign_time_end.toLocaleTimeString());
+}
 
 function enableSign() {
   if (btn && btn.innerText) {
@@ -61,7 +68,7 @@ function enableSign() {
     main();
   } else {
     // 如果按钮还没正常显示,等会儿再判断
-    console.log('如果按钮还没正常显示,等会儿再判断');
+    console.log("按钮还没正常显示,等30秒再判断");
     t1 = setTimeout(() => {
       clearTimeout(t1);
       t1 = null;
@@ -82,10 +89,10 @@ function enableSign() {
       reloadTomorrow();
     } else if (btnText == "今日签到") {
       // 签到
-      signUp();
+      sign(true);
     } else if (btnText == "今日签退") {
       // 签退
-      signOut();
+      sign(false);
     }
   }
 
@@ -98,49 +105,29 @@ function enableSign() {
   }
 
   // 签到
-  function signUp() {
-    if (btnText !== "今日签到") location.reload();
+  function sign(isSignUp) {
+    let sign_time;
+    if (isSignUp) {
+      if (btnText !== "今日签到") location.reload();
+      sign_time = sign_time_start.getTime() - 600000; //上班打卡开始时间距上班时间提前10分钟
+    } else {
+      if (btnText !== "今日签退") location.reload();
+      sign_time = sign_time_end.getTime();
+    }
     let now = new Date();
     var week = now.getDay();
-    let h = now.getHours();
-    let m = now.getMinutes();
-
+    let now_time = now.getTime();
     if (week >= 1 && week <= 5) {
       //工作日
-      var signTime = new Date();
-      signTime.setHours(SIGN_START_HOUR);
-      signTime.setMinutes(SIGN_START_MINUTE);
-      signTime.setTime(signTime.getTime() - 10 * 60 * 1000)
-      if (now.getTime() > signTime.getTime()) {
-        // 上班时间
+      if (now_time >= sign_time) {
+        // 现在可以打卡，立即打卡
         doClick();
       } else {
-        doClick(((SIGN_START_HOUR - h) * 60 + SIGN_START_MINUTE - m) * 60000);
+        doClick(sign_time - now_time);
       }
     } else {
       //周未
-      reloadAfter(86400000); // 24小时后
-    }
-  }
-
-  function signOut() {
-    if (btnText !== "今日签退") location.reload();
-    let now = new Date();
-    var week = now.getDay();
-    let h = now.getHours();
-    let m = now.getMinutes();
-    if (week >= 1 && week <= 5) {
-      var signTime = new Date();
-      signTime.setHours(SIGN_END_HOUR);
-      signTime.setMinutes(SIGN_END_MINUTE);
-      if (now.getTime() > signTime.getTime()) {
-        doClick();
-      } else {
-        doClick(((SIGN_END_HOUR - h) * 60 + SIGN_END_MINUTE - m) * 60000);
-      }
-    } else {
-      //周未
-      reloadAfter(86400000); // 24小时后
+      reloadAfter(86400000); // 24小时后刷新
     }
   }
 }
@@ -161,8 +148,8 @@ function doClick(waittime) {
     // if(addRandom) {
     //   parseInt(Math.random()*11) * 60000;
     // }
-    var delay_time = waittime + parseInt(Math.random() * 11) * 60000;
-    console.log(`${delay_time / 1000 / 60}分钟后自动点击`);
+    var delay_time = parseInt(waittime + parseInt(Math.random() * 10) * 60000);
+    console.log('%d分钟后自动打卡', parseInt(delay_time / 60000));
     t3 = setTimeout(function () {
       clearTimeout(t3);
       t3 = null;
@@ -191,18 +178,19 @@ function reloadAfter(ms) {
 // 禁止系统alert
 function killAlert(params) {
   var script = document.createElement("script");
-  script.setAttribute('id', 'kill-alert');
-  script.innerHTML = 'var _alert = window.alert;window.alert = function(){console.log(arguments);}'
+  script.setAttribute("id", "kill-alert");
+  script.innerHTML =
+    "var _alert = window.alert;window.alert = function(){console.log(arguments);}";
   document.head.appendChild(script);
-  document.querySelector('#kill-alert').remove();
+  document.querySelector("#kill-alert").remove();
 }
 
 function restoreAlert(params) {
-  setTimeout(()=>{
+  setTimeout(() => {
     var script = document.createElement("script");
-    script.setAttribute('id', 're-alert');
-    script.innerHTML = 'window.alert = _alert;'
-    document.head.appendChild(script)
-    document.querySelector('#re-alert').remove();
+    script.setAttribute("id", "re-alert");
+    script.innerHTML = "window.alert = _alert;";
+    document.head.appendChild(script);
+    document.querySelector("#re-alert").remove();
   }, 1000);
 }

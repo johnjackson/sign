@@ -14,8 +14,7 @@
   "content_scripts": [
     {
       "matches": ["http://11.0.1.178:8020/"],
-      "js": ["js/page.js"],
-      "css": ["css/signBtn.css"]
+      "js": ["js/page.js"]
     }
   ],
   "background": {
