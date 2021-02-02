@@ -65,6 +65,7 @@ function setOption(options) {
 }
 
 function enableSign() {
+  btn = document.querySelector(".oa_btn_submit span");
   if (btn && btn.innerText) {
     btnText = btn.innerText;
     main();
