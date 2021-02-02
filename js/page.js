@@ -32,7 +32,9 @@ function start(isEnable) {
   enable = typeof isEnable == "undefined" ? enable : isEnable;
   if (enable) {
     console.log("%c 自动签到启动", "color:green");
-    enableSign();
+    setTimeout(() => {
+      enableSign();
+    }, 3000);
   } else {
     console.log("%c 自动签到停止", "color:red");
     disableSign();
@@ -69,6 +71,7 @@ function enableSign() {
   } else {
     // 如果按钮还没正常显示,等会儿再判断
     console.log("按钮还没正常显示,等30秒再判断");
+
     t1 = setTimeout(() => {
       clearTimeout(t1);
       t1 = null;
@@ -101,7 +104,9 @@ function enableSign() {
     let date = new Date();
     let h = date.getHours();
     let m = date.getMinutes();
-    reloadAfter(((23 - h) * 60 + (61 - m)) * 60000);
+    let mins = ((23 - h) * 60 + (61 - m)) ;
+    console.log(`今天已签退，过了晚上24点(${mins}分钟后)页面将自动刷新`);
+    reloadAfter(mins * 60000);
   }
 
   // 签到
@@ -173,6 +178,7 @@ function reloadAfter(ms) {
     t2 = null;
     location.reload();
   }, ms);
+  console.log(`${ms/60000}分钟后会刷新页面`);
 }
 
 // 禁止系统alert
