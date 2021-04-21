@@ -7,19 +7,20 @@ var SIGN_END_MINUTE = 30;
 var sign_time_start;
 var sign_time_end;
 // var addRandom = true;
-
-window.onload = function (params) {
+function ready() {
   btn = document.querySelector(".oa_btn_submit span");
   getIsEnable();
-};
-
+}
+window.onload = ready;
+window.onhashchange = ready;
+// 运行时监听插件设置的改变
 chrome.runtime.onMessage.addListener(function (options, sender, sendResponse) {
   // console.log('接收到插件发来的参数', options);
   setOption(options);
   start(options.isEnable);
 });
 
-// 从插件的本地存储中获取设置
+// 初始化时，从插件的本地存储中获取设置
 function getIsEnable() {
   chrome.runtime.sendMessage("getOptions", function (options) {
     // console.log('options', options);
@@ -41,6 +42,7 @@ function start(isEnable) {
   }
 }
 
+// 设置签到台湾v阿房时间，并保存到本地
 function setOption(options) {
   if (options && options.sign_start_time) {
     let st = options.sign_start_time.split(":");
@@ -89,7 +91,7 @@ function enableSign() {
 
   function main() {
     //判断当前按钮状态是加班的话，就等到第二天再刷新页面
-    if (btnText.indexOf("加班") != -1) {
+    if (btnText.indexOf("加班") != -1 || btnText.indexOf("结束") != -1) {
       reloadTomorrow();
     } else if (btnText == "今日签到") {
       // 签到
@@ -105,7 +107,7 @@ function enableSign() {
     let date = new Date();
     let h = date.getHours();
     let m = date.getMinutes();
-    let mins = ((23 - h) * 60 + (61 - m)) ;
+    let mins = (23 - h) * 60 + (61 - m);
     console.log(`今天已签退，过了晚上24点(${mins}分钟后)页面将自动刷新`);
     reloadAfter(mins * 60000);
   }
@@ -123,7 +125,7 @@ function enableSign() {
     let now = new Date();
     var week = now.getDay();
     let now_time = now.getTime();
-    if (week >= 1 && week <= 5) {
+    if (week >= 1 && week <= 6) {
       //工作日
       if (now_time >= sign_time) {
         // 现在可以打卡，立即打卡
@@ -155,7 +157,7 @@ function doClick(waittime) {
     //   parseInt(Math.random()*11) * 60000;
     // }
     var delay_time = parseInt(waittime + parseInt(Math.random() * 10) * 60000);
-    console.log('%d分钟后自动打卡', parseInt(delay_time / 60000));
+    console.log("%d分钟后自动打卡", parseInt(delay_time / 60000));
     t3 = setTimeout(function () {
       clearTimeout(t3);
       t3 = null;
@@ -179,7 +181,7 @@ function reloadAfter(ms) {
     t2 = null;
     location.reload();
   }, ms);
-  console.log(`${ms/60000}分钟后会刷新页面`);
+  console.log(`${ms / 60000}分钟后会刷新页面`);
 }
 
 // 禁止系统alert
