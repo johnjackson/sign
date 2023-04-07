@@ -90,7 +90,7 @@ function enableSign() {
   }
 
   function main() {
-    //判断当前按钮状态是加班的话，就等到第二天再刷新页面
+    //判断当前按钮状态是加班的话，就等到第二天再刷新页面
     if (btnText.indexOf("加班") != -1 || btnText.indexOf("结束") != -1) {
       reloadTomorrow();
     } else if (btnText == "今日签到") {
@@ -115,6 +115,7 @@ function enableSign() {
   // 签到
   function sign(isSignUp) {
     let sign_time;
+    // 判断是签到还是签退
     if (isSignUp) {
       if (btnText !== "今日签到") location.reload();
       sign_time = sign_time_start.getTime() - 600000; //上班打卡开始时间距上班时间提前10分钟
@@ -125,18 +126,19 @@ function enableSign() {
     let now = new Date();
     var week = now.getDay();
     let now_time = now.getTime();
-    if (week >= 1 && week <= 6) {
+    // if (week >= 1 && week <= 6) {
       //工作日
       if (now_time >= sign_time) {
         // 现在可以打卡，立即打卡
         doClick();
       } else {
+        console.log(`将于${new Date(sign_time).toLocaleTimeString()}打卡 -- 现在时间：${new Date().toLocaleTimeString()}`);
         doClick(sign_time - now_time);
       }
-    } else {
-      //周未
-      reloadAfter(86400000); // 24小时后刷新
-    }
+    // } else {
+    //   //周末 因为周末有时是法点假日倒休，也要正常上班打卡
+    //   reloadAfter(86400000); // 24小时后刷新
+    // }
   }
 }
 
@@ -157,7 +159,7 @@ function doClick(waittime) {
     //   parseInt(Math.random()*11) * 60000;
     // }
     var delay_time = parseInt(waittime + parseInt(Math.random() * 10) * 60000);
-    console.log("%d分钟后自动打卡", parseInt(delay_time / 60000));
+    console.log("%d分钟后自动打卡", parseInt(delay_time / 60000));
     t3 = setTimeout(function () {
       clearTimeout(t3);
       t3 = null;
